@@ -72,7 +72,8 @@ contract PolymorphicFacesRoot is
     //todo Rewrite for Face claim based on how many V1 polymorphs burned
     function mint(uint256[] memory tokenIds) external virtual nonReentrant {
         require(_tokenId < maxSupply, "Total supply reached");
-        
+        require(tokenIds.length <= 20, "Can't mint more than 20 in one tx");
+
         for(uint i=0; i<tokenIds.length;i++){
             require(
                 polymorphV2Contract.ownerOf(tokenIds[i]) == msg.sender,
