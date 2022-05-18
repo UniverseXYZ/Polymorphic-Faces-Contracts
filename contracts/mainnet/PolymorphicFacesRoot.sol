@@ -80,22 +80,22 @@ contract PolymorphicFacesRoot is
             );
             require(!isClaimed[tokenIds[i]], "TokenID already claimed");
             isClaimed[tokenIds[i]] = true;
+        
+            _tokenId++;
+
+            _genes[_tokenId] = geneGenerator.random();
+
+            _mint(_msgSender(), _tokenId);
+
+            emit TokenMinted(_tokenId, _genes[_tokenId]);
+            emit TokenMorphed(
+                _tokenId, 
+                0, 
+                _genes[_tokenId], 
+                0, 
+                FacesEventType.MINT
+            );
         }
-
-        _tokenId++;
-
-        _genes[_tokenId] = geneGenerator.random();
-
-        _mint(_msgSender(), _tokenId);
-
-        emit TokenMinted(_tokenId, _genes[_tokenId]);
-        emit TokenMorphed(
-            _tokenId, 
-            0, 
-            _genes[_tokenId], 
-            0, 
-            FacesEventType.MINT
-        );
     }
 
 
