@@ -4,12 +4,11 @@ Built to scramble and can only be obtained by burning V1 Polymorphs.
 
 
 ### Contract Tasks
-- [ ] Connect PolymorphV2 contract to track a wallets token burn amount
-- [ ] Claimable by amount of V1 Polymorphs burned
 - [ ] Write Tests 
 - [ ] edit README
 
 ### Completed Column ✓
+- [x] each polymorph v2 can claim 1 face by tokenID
 - [x] replace `burnToMint` with `claimFaces`
 - [x] edit Param Stuck to suit Faces needs 
 - [x] Create claim period that DAO can turn off is voted by communitiy

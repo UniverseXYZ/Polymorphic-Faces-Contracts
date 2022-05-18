@@ -70,10 +70,17 @@ contract PolymorphicFacesRoot is
     }
 
     //todo Rewrite for Face claim based on how many V1 polymorphs burned
-    function mint() external virtual nonReentrant {
+    function mint(uint256[] memory tokenIds) external virtual nonReentrant {
         require(_tokenId < maxSupply, "Total supply reached");
-
-        // require(Polymorph.isClaimed(_tokenId)[msg.sender] == true);
+        
+        for(uint i=0; i<tokenIds.length;i++){
+            require(
+                polymorphV2Contract.ownerOf(tokenIds[i]) == msg.sender,
+                "Polymorph not owned by minter" 
+            );
+            require(!isClaimed[tokenIds[i]], "TokenID already claimed");
+            isClaimed[tokenIds[i]] = true;
+        }
 
         _tokenId++;
 
