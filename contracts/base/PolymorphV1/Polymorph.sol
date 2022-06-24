@@ -2,9 +2,9 @@
 pragma solidity 0.8.13;
 import "./IPolymorph.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../base/ERC721PresetMinterPauserAutoId.sol";
-import "../lib/PolymorphGeneGenerator.sol";
-import "../modifiers/DAOControlled.sol";
+import "../../base/ERC721PresetMinterPauserAutoId.sol";
+import "../../lib/PolymorphGeneGenerator.sol";
+import "../../modifiers/DAOControlled.sol";
 
 abstract contract Polymorph is
     IPolymorph,

@@ -3,6 +3,7 @@ pragma solidity 0.8.13;
 
 import "./IPolymorphicFaces.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "../base/ERC721PresetMinterPauserAutoId.sol";
 import "../lib/PolymorphicFacesGeneGenerator.sol";
 import "../modifiers/DAOControlled.sol";
@@ -10,6 +11,7 @@ import "../modifiers/DAOControlled.sol";
 abstract contract PolymorphicFaces is
     IPolymorphicFaces,
     ERC721PresetMinterPauserAutoId,
+    ERC2981,
     ReentrancyGuard,
     DAOControlled
 {
@@ -81,10 +83,6 @@ abstract contract PolymorphicFaces is
         );
     }
 
-    // function setRoyalties(address recipient, uint256 value) public onlyDAO {
-    //     _setRoyalties(recipient, value);
-    // }    
-
     function setBaseURI(string memory _baseURI)
         public
         virtual
@@ -105,5 +103,15 @@ abstract contract PolymorphicFaces is
         arweaveAssetsJSON = _arweaveAssetsJSON;
 
         emit ArweaveAssetsJSONChanged(_arweaveAssetsJSON);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC721PresetMinterPauserAutoId, IERC165, ERC2981)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 }
