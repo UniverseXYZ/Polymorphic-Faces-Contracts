@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 
-describe("PolymorphicFaces", () => {
+describe("PolymorphicFacesRoot", () => {
   let DAO;
   let aliceAccount;
   let bobsAccount;
@@ -24,7 +24,6 @@ describe("PolymorphicFaces", () => {
 
   let v1PolymorphsInitialBuy = 15;
 
-
   before(async () => {
     const [user, dao, alice, bob] = await ethers.getSigners();
 
@@ -38,19 +37,37 @@ describe("PolymorphicFaces", () => {
       symbol: "MORPH",
       baseURI: baseUri,
       _daoAddress: DAO.address,
-      _polymorphPrice:polymorphPrice,
-      _maxSupply:totalSupply,
-      _bulkBuyLimit:bulkBuyLimit,
+      _polymorphPrice: polymorphPrice,
+      _maxSupply: totalSupply,
+      _bulkBuyLimit: bulkBuyLimit,
       _baseGenomeChangePrice: baseGenomeChangePriceV2,
       _randomizeGenomePrice: randomizeGenomePriceV2,
       _arweaveAssetsJSON: arweaveAssetsJSON,
     };
 
-    const PolymorphsV1 = await ethers.getContractFactory("PolymorphWithGeneChanger");
-    v1Instance = await PolymorphsV1.connect(user).deploy(constructorArgsPolymorphsV1.name,constructorArgsPolymorphsV1.symbol,constructorArgsPolymorphsV1.baseURI,constructorArgsPolymorphsV1._daoAddress,constructorArgsPolymorphsV1._polymorphPrice,constructorArgsPolymorphsV1._maxSupply,constructorArgsPolymorphsV1._bulkBuyLimit,constructorArgsPolymorphsV1._baseGenomeChangePrice,constructorArgsPolymorphsV1._randomizeGenomePrice,constructorArgsPolymorphsV1._arweaveAssetsJSON, {gasLimit:15000000});
+    const PolymorphsV1 = await ethers.getContractFactory(
+      "PolymorphWithGeneChanger"
+    );
+    v1Instance = await PolymorphsV1.connect(user).deploy(
+      constructorArgsPolymorphsV1.name,
+      constructorArgsPolymorphsV1.symbol,
+      constructorArgsPolymorphsV1.baseURI,
+      constructorArgsPolymorphsV1._daoAddress,
+      constructorArgsPolymorphsV1._polymorphPrice,
+      constructorArgsPolymorphsV1._maxSupply,
+      constructorArgsPolymorphsV1._bulkBuyLimit,
+      constructorArgsPolymorphsV1._baseGenomeChangePrice,
+      constructorArgsPolymorphsV1._randomizeGenomePrice,
+      constructorArgsPolymorphsV1._arweaveAssetsJSON,
+      { gasLimit: 15000000 }
+    );
 
-    await v1Instance.connect(user).bulkBuy(v1PolymorphsInitialBuy, {value: polymorphPrice.mul(v1PolymorphsInitialBuy)});
-    
+    await v1Instance
+      .connect(user)
+      .bulkBuy(v1PolymorphsInitialBuy, {
+        value: polymorphPrice.mul(v1PolymorphsInitialBuy),
+      });
+
     constructorArgsPolymorphs = {
       name: "PolymorphRoot",
       symbol: "iMORPH",
@@ -67,13 +84,20 @@ describe("PolymorphicFaces", () => {
     };
 
     const PolymorphsV2 = await ethers.getContractFactory("PolymorphRoot");
-    v2Instance = await PolymorphsV2.deploy(constructorArgsPolymorphs, {gasLimit:15000000});
+    v2Instance = await PolymorphsV2.deploy(constructorArgsPolymorphs, {
+      gasLimit: 15000000,
+    });
 
     console.log(`PolymorphRoot instance deployed to: ${v2Instance.address}`);
 
     await v1Instance.connect(user).setApprovalForAll(v2Instance.address, true);
 
-    await v2Instance.connect(user).burnAndMintNewPolymorph([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], {gasLimit:15000000 });
+    await v2Instance
+      .connect(user)
+      .burnAndMintNewPolymorph(
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        { gasLimit: 15000000 }
+      );
 
     constructorArgsFaces = {
       name: nameFaces,
@@ -90,11 +114,14 @@ describe("PolymorphicFaces", () => {
   });
 
   it(`should successfully claim all tokens`, async () => {
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
-
-    await facesInst.claim(15, {gasLimit: 15000000});
+    await facesInst.claim(15, { gasLimit: 15000000 });
 
     const lastToken = await facesInst.lastTokenId();
 
@@ -102,53 +129,67 @@ describe("PolymorphicFaces", () => {
   });
 
   it(`should not be able to claim more faces than burned v2 polys`, async () => {
-
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
     const userAllowanceToClaim = await v2Instance.burnCount(deployer.address);
 
-    await expect(
-      facesInst.claim(userAllowanceToClaim, {gasLimit: 15000000})
-    ).to.not.be.reverted;
+    await expect(facesInst.claim(userAllowanceToClaim, { gasLimit: 15000000 }))
+      .to.not.be.reverted;
 
-    await expect(
-      facesInst.claim(1, {gasLimit: 15000000})
-    ).to.be.revertedWith("User already claimed all allowed faces");
+    await expect(facesInst.claim(1, { gasLimit: 15000000 })).to.be.revertedWith(
+      "User already claimed all allowed faces"
+    );
   });
 
   it(`should be able to claim faces even if user has transferred some polymorphs`, async () => {
-
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
     const userAllowanceToClaim = await v2Instance.burnCount(deployer.address);
 
     const polymorphsToTranfer = 2;
 
     await expect(
-      facesInst.claim(userAllowanceToClaim - polymorphsToTranfer, {gasLimit: 15000000})
-    ).to.not.be.reverted;
-
-    await expect(v2Instance.transferFrom(deployer.address, aliceAccount.address, 10)).to.not.be.reverted;
-    await expect(v2Instance.transferFrom(deployer.address, aliceAccount.address, 12)).to.not.be.reverted;
-
-    await expect(
-      facesInst.claim(polymorphsToTranfer, {gasLimit: 15000000})
+      facesInst.claim(userAllowanceToClaim - polymorphsToTranfer, {
+        gasLimit: 15000000,
+      })
     ).to.not.be.reverted;
 
     await expect(
-      facesInst.claim(1, {gasLimit: 15000000})
-    ).to.be.revertedWith("User already claimed all allowed faces");
+      v2Instance.transferFrom(deployer.address, aliceAccount.address, 10)
+    ).to.not.be.reverted;
+    await expect(
+      v2Instance.transferFrom(deployer.address, aliceAccount.address, 12)
+    ).to.not.be.reverted;
+
+    await expect(facesInst.claim(polymorphsToTranfer, { gasLimit: 15000000 }))
+      .to.not.be.reverted;
+
+    await expect(facesInst.claim(1, { gasLimit: 15000000 })).to.be.revertedWith(
+      "User already claimed all allowed faces"
+    );
   });
 
   it(`mint(address) should be disabled`, async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    let facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    let facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await expect(
-      facesInst["mint(address)"](deployer.address)
-    ).revertedWith("Should not use this one");
+    await expect(facesInst["mint(address)"](deployer.address)).revertedWith(
+      "Should not use this one"
+    );
   });
 
   // it(`transfer calls mint functionality`, async () => {
@@ -165,25 +206,32 @@ describe("PolymorphicFaces", () => {
   // });
 
   it("should mint nft with random gene", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    let facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    let facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await facesInst.claim(2, {gasLimit: 15000000});
+    await facesInst.claim(2, { gasLimit: 15000000 });
 
     const geneA = await facesInst.geneOf(startTokenId + 1);
     const geneB = await facesInst.geneOf(startTokenId + 2);
 
     expect(geneA).not.eq(geneB, "The two genes ended up the same");
-
   });
 
   it("should not change the gene on transfer", async () => {
     const bobsAddress = await bobsAccount.address;
 
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    let facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    let facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await facesInst.claim(3, {gasLimit: 15000000});
+    await facesInst.claim(3, { gasLimit: 15000000 });
 
     const geneBefore = await facesInst.geneOf(startTokenId + 3);
     await facesInst.transferFrom(
@@ -197,35 +245,43 @@ describe("PolymorphicFaces", () => {
   });
 
   it("randomize gene should return excess ether sent", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    let facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    let facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await facesInst.claim(3, {gasLimit: 15000000});
+    await facesInst.claim(3, { gasLimit: 15000000 });
 
     const tokenId = await facesInst.lastTokenId();
 
     const randomizeCost = await facesInst.randomizeGenomePrice();
 
     await expect(
-      await facesInst
-        .randomizeGenome(tokenId, { value: randomizeCost.mul(3) })
+      await facesInst.randomizeGenome(tokenId, { value: randomizeCost.mul(3) })
     ).to.changeEtherBalance(deployer, randomizeCost.mul(-1));
   });
 
   it("should evolve gene", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await facesInst.claim(5, {gasLimit: 15000000});
-    
+    await facesInst.claim(5, { gasLimit: 15000000 });
+
     const tokenIdForMorphing = startTokenId + 2;
 
     const geneBefore = await facesInst.geneOf(tokenIdForMorphing);
 
-    let morphPrice = await facesInst.priceForGenomeChange(
-      tokenIdForMorphing
+    let morphPrice = await facesInst.priceForGenomeChange(tokenIdForMorphing);
+    expect(morphPrice).eq(
+      defaultGenomeChangePrice,
+      "The price was not the default"
     );
-    expect(morphPrice).eq(defaultGenomeChangePrice, "The price was not the default");
 
     await expect(
       await facesInst.morphGene(tokenIdForMorphing, 1, { value: morphPrice })
@@ -247,7 +303,10 @@ describe("PolymorphicFaces", () => {
     const geneAfter2 = await facesInst.geneOf(tokenIdForMorphing);
     const kekBalanceAfter2 = await DAO.getBalance();
     expect(geneAfter2).not.eq(geneAfter, "The gene did not change");
-    expect(kekBalanceAfter).to.be.below(kekBalanceAfter2, "The price was not paid");
+    expect(kekBalanceAfter).to.be.below(
+      kekBalanceAfter2,
+      "The price was not paid"
+    );
 
     morphPrice = await facesInst.priceForGenomeChange(tokenIdForMorphing);
     expect(morphPrice).eq(
@@ -270,19 +329,28 @@ describe("PolymorphicFaces", () => {
 
     const randomizePrice = await facesInst.randomizeGenomePrice();
 
-    await facesInst.randomizeGenome(tokenIdForMorphing, { value: randomizePrice });
+    await facesInst.randomizeGenome(tokenIdForMorphing, {
+      value: randomizePrice,
+    });
     const geneAfterReset = await facesInst.geneOf(tokenIdForMorphing);
     expect(geneAfterReset).not.eq(geneAfter3, "The gene did not change");
 
     morphPrice = await facesInst.priceForGenomeChange(tokenIdForMorphing);
-    expect(morphPrice).eq(defaultGenomeChangePrice, "The price was not the default");
+    expect(morphPrice).eq(
+      defaultGenomeChangePrice,
+      "The price was not the default"
+    );
   });
 
   it("should not morph from a contract interactor", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await facesInst.claim(5, {gasLimit: 15000000});
+    await facesInst.claim(5, { gasLimit: 15000000 });
 
     const tokenIdForRandomize = startTokenId + 2;
     const geneBefore = await facesInst.geneOf(tokenIdForRandomize);
@@ -322,10 +390,14 @@ describe("PolymorphicFaces", () => {
   });
 
   it("should not morph face that is not yours", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await facesInst.claim(2, {gasLimit: 15000000});
+    await facesInst.claim(2, { gasLimit: 15000000 });
 
     const tokenId = await facesInst.lastTokenId();
 
@@ -341,11 +413,16 @@ describe("PolymorphicFaces", () => {
     );
   });
 
-  it("genome should be the same length after randomization", async () => { // May fail sometimes. See the Note in README##Genome
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+  it("genome should be the same length after randomization", async () => {
+    // May fail sometimes. See the Note in README##Genome
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await facesInst.claim(2, {gasLimit: 15000000});
+    await facesInst.claim(2, { gasLimit: 15000000 });
 
     const tokenId = await facesInst.lastTokenId();
 
@@ -363,26 +440,31 @@ describe("PolymorphicFaces", () => {
   });
 
   it("morph gene should return excess ether sent", async () => {
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
-
-    await facesInst.claim(2, {gasLimit: 15000000});
+    await facesInst.claim(2, { gasLimit: 15000000 });
 
     const tokenId = await facesInst.lastTokenId();
 
     const morphCost = await facesInst.priceForGenomeChange(tokenId);
 
     await expect(
-      await facesInst
-        .morphGene(tokenId, 2, { value: morphCost.mul(5) })
+      await facesInst.morphGene(tokenId, 2, { value: morphCost.mul(5) })
     ).to.changeEtherBalance(deployer, morphCost.mul(-1));
   });
 
   it("should not morph gene when DAO does not have receive or fallback function", async () => {
-
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
     const TestContractInteractor = await ethers.getContractFactory(
       "TestContractInteractor"
@@ -407,7 +489,7 @@ describe("PolymorphicFaces", () => {
       _polymorphV2Address: v2Instance.address,
     });
 
-    await mockedFacesInstance.claim(2, {gasLimit: 15000000});
+    await mockedFacesInstance.claim(2, { gasLimit: 15000000 });
 
     await expect(
       mockedFacesInstance.morphGene(startTokenId + 2, 2)
@@ -417,17 +499,21 @@ describe("PolymorphicFaces", () => {
   });
 
   it("should revert if invalid gene position is passed", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await facesInst.claim(2, {gasLimit: 15000000});
+    await facesInst.claim(2, { gasLimit: 15000000 });
 
     const tokenId = await facesInst.lastTokenId();
 
     const morphCost = await facesInst.priceForGenomeChange(tokenId);
 
-    await expect(facesInst.morphGene(tokenId, 37, { value: morphCost }))
-      .to.not.reverted;
+    await expect(facesInst.morphGene(tokenId, 37, { value: morphCost })).to.not
+      .reverted;
     await expect(
       facesInst.morphGene(tokenId, 38, { value: morphCost.mul(2) })
     ).revertedWith("Bad gene position");
@@ -488,10 +574,14 @@ describe("PolymorphicFaces", () => {
   // });
 
   it("should not randomize gene when DAO does not have receive or fallback function", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await facesInst.claim(2, {gasLimit: 15000000});
+    await facesInst.claim(2, { gasLimit: 15000000 });
 
     const TestContractInteractor = await ethers.getContractFactory(
       "TestContractInteractor"
@@ -516,12 +606,8 @@ describe("PolymorphicFaces", () => {
       _polymorphV2Address: v2Instance.address,
     });
 
-    await mockedFacesInstance.claim(2, {gasLimit: 15000000});
-    await expect(
-      mockedFacesInstance.randomizeGenome(
-        2
-      )
-    ).revertedWith(
+    await mockedFacesInstance.claim(2, { gasLimit: 15000000 });
+    await expect(mockedFacesInstance.randomizeGenome(2)).revertedWith(
       "Address: unable to send value, recipient may have reverted"
     );
   });
@@ -559,8 +645,12 @@ describe("PolymorphicFaces", () => {
   // });
 
   it("should change max supply", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
     const newMaxSupply = 11000;
 
@@ -581,13 +671,16 @@ describe("PolymorphicFaces", () => {
   });
 
   it("should change randomizeGenomePrice", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
-    
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
+
     const newRandomizeGenomePrice = ethers.utils.parseEther("0.1");
 
-    const randomizeGenomePriceBefore =
-      await facesInst.randomizeGenomePrice();
+    const randomizeGenomePriceBefore = await facesInst.randomizeGenomePrice();
     expect(randomizeGenomePriceBefore).eq(
       randomizeGenomePrice,
       `The randomize genome was not ${randomizeGenomePrice} in the beginning`
@@ -597,8 +690,7 @@ describe("PolymorphicFaces", () => {
       .connect(DAO)
       .changeRandomizeGenomePrice(newRandomizeGenomePrice);
 
-    const randomizeGenomePriceAfter =
-      await facesInst.randomizeGenomePrice();
+    const randomizeGenomePriceAfter = await facesInst.randomizeGenomePrice();
     expect(randomizeGenomePriceAfter).eq(
       newRandomizeGenomePrice,
       "The randomize genome price did not change"
@@ -610,12 +702,15 @@ describe("PolymorphicFaces", () => {
   });
 
   it("should change baseGenomeChangePrice", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
     const newChangeGenomePrice = ethers.utils.parseEther("0.1");
 
-    const changeGenomePriceBefore =
-      await facesInst.baseGenomeChangePrice();
+    const changeGenomePriceBefore = await facesInst.baseGenomeChangePrice();
     expect(changeGenomePriceBefore).eq(
       defaultGenomeChangePrice,
       `The change genome was not ${defaultGenomeChangePrice} in the beginning`
@@ -625,8 +720,7 @@ describe("PolymorphicFaces", () => {
       .connect(DAO)
       .changeBaseGenomeChangePrice(newChangeGenomePrice);
 
-    const changeGenomePriceAfter =
-      await facesInst.baseGenomeChangePrice();
+    const changeGenomePriceAfter = await facesInst.baseGenomeChangePrice();
     expect(changeGenomePriceAfter).eq(
       newChangeGenomePrice,
       "The change genome price did not change"
@@ -638,8 +732,12 @@ describe("PolymorphicFaces", () => {
   });
 
   it("should change baseURI", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
     const newBaseURI = "https://universe.xyz.com/";
     const baseURIBefore = await facesInst.baseURI();
     expect(baseURIBefore).eq(
@@ -658,8 +756,12 @@ describe("PolymorphicFaces", () => {
   });
 
   it("should change arweave assets", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
     const newArweave = "new arweave json";
 
     const arweaveBefore = await facesInst.arweaveAssetsJSON();
@@ -673,14 +775,18 @@ describe("PolymorphicFaces", () => {
     const arweaveAfter = await facesInst.arweaveAssetsJSON();
     expect(arweaveAfter).eq(newArweave, "The bulk buy limit did not change");
 
-    await expect(
-      facesInst.setArweaveAssetsJSON(newArweave)
-    ).revertedWith("Not called from the dao");
+    await expect(facesInst.setArweaveAssetsJSON(newArweave)).revertedWith(
+      "Not called from the dao"
+    );
   });
 
   it("wormholeUpdateGene should revert if not called from tunnel", async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
     await expect(
       facesInst.wormholeUpdateGene(1, 12312312312, true, 2)
     ).to.be.revertedWith("Not called from the tunnel");
@@ -690,7 +796,7 @@ describe("PolymorphicFaces", () => {
   //   // Should buy all V1s (10K)
   //   let currentSupply = await v1Instance.totalSupply();
   //   while(currentSupply < totalSupply) {
-      
+
   //   }
   //   for (let i = v1PolymorphsInitialBuy + 1; i < totalSupply - v1PolymorphsInitialBuy - 1; i+=20) {
   //     await v1Instance.bulkBuy(20, {value: polymorphPrice.mul(20)});
@@ -715,10 +821,14 @@ describe("PolymorphicFaces", () => {
   // });
 
   it(`should not be able to claim more than totalSupply`, async () => {
-    const PolymorphicFacesRoot = await ethers.getContractFactory("PolymorphicFacesRoot");
-    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {gasLimit:15000000});
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
 
-    await facesInst.claim(15, {gasLimit: 15000000}); // claiming the initial v2 burned into polys
+    await facesInst.claim(15, { gasLimit: 15000000 }); // claiming the initial v2 burned into polys
 
     // Setting it this low for purpose. We need to mint V1 Polys first, then Burn them into V2s and finally claim the total amount of faces
     // This test case would get too slow if we do it for 10K
@@ -737,23 +847,68 @@ describe("PolymorphicFaces", () => {
 
     // bulkBuy v1 Polys up to 100, burn them afterwards for v2 Poly and claim a face
 
-    for(let i = v1PolymorphsInitialBuy + 1; i < newMaxSupply + 1; i++) { // from 16 up to 100 inclusively
-      await v1Instance.bulkBuy(1, {value: polymorphPrice.mul(1)});
-      await v2Instance.burnAndMintNewPolymorph([i], {gasLimit:15000000 });
-      await facesInst.claim(1, {gasLimit: 15000000});
+    for (let i = v1PolymorphsInitialBuy + 1; i < newMaxSupply + 1; i++) {
+      // from 16 up to 100 inclusively
+      await v1Instance.bulkBuy(1, { value: polymorphPrice.mul(1) });
+      await v2Instance.burnAndMintNewPolymorph([i], { gasLimit: 15000000 });
+      await facesInst.claim(1, { gasLimit: 15000000 });
     }
 
     // buying one more v1 and v2 polys
 
-    await v1Instance.bulkBuy(1, {value: polymorphPrice.mul(1)});
+    await v1Instance.bulkBuy(1, { value: polymorphPrice.mul(1) });
 
     const lastV1Poly = await v1Instance.lastTokenId();
-    
+
     expect(lastV1Poly).to.eq(101);
 
-    await v2Instance.burnAndMintNewPolymorph([lastV1Poly], {gasLimit:15000000 });
-    
-    await expect(facesInst.claim(1, {gasLimit: 15000000})).revertedWith(
+    await v2Instance.burnAndMintNewPolymorph([lastV1Poly], {
+      gasLimit: 15000000,
+    });
+
+    await expect(facesInst.claim(1, { gasLimit: 15000000 })).revertedWith(
+      "Total supply reached"
+    );
+  });
+
+  it.only(`daoMint should mint up to totalSupply`, async () => {
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
+      gasLimit: 15000000,
+    });
+
+    const newMaxSupply = 15;
+
+    const totalSupplyBefore = await facesInst.maxSupply();
+    expect(totalSupplyBefore).eq(
+      totalSupply,
+      `The max supply was not ${totalSupply} in the beginning`
+    );
+
+    await facesInst.connect(DAO).setMaxSupply(newMaxSupply);
+
+    const totalSupplyAfter = await facesInst.maxSupply();
+    expect(totalSupplyAfter).eq(newMaxSupply, "The max supply did not change");
+
+    await expect(facesInst.daoMint(15)).to.be.revertedWith("Not called from the dao");
+    await expect(facesInst.connect(DAO).daoMint(30)).to.be.revertedWith("DAO can mint at most 25 faces per transaction");
+    await expect(facesInst.connect(DAO).daoMint(15)).to.not.be.reverted;
+
+    // buying one more v1 and v2 polys
+
+    await v1Instance.bulkBuy(1, { value: polymorphPrice.mul(1) });
+
+    const lastV1Poly = await v1Instance.lastTokenId();
+
+    expect(lastV1Poly).to.eq(16);
+
+    await v2Instance.burnAndMintNewPolymorph([lastV1Poly], {
+      gasLimit: 15000000,
+    });
+
+    await expect(facesInst.claim(1, { gasLimit: 15000000 })).revertedWith(
       "Total supply reached"
     );
   });

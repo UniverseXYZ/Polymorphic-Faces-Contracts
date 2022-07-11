@@ -14,20 +14,31 @@
 
 - `./scripts/verify.sh`
 
+
   - PolymorphicFacesRoot Verification:
-    - `npx hardhat verify --network goerli contractAddress --constructor-args ./deployment/args/root-faces-args.js`
+    ```bash
+    npx hardhat verify --network goerli contractAddress --constructor-args ./deployment/args/root-faces-args.js
+    ```
 
   - RootTunnel Verification:
-    - `npx hardhat verify --network goerli <contractAddress> <"checkPointAddress"> <"fxRootAddress"> <"daoAddress">`
+    ```bash
+    npx hardhat verify --network goerli <contractAddress> <"checkPointAddress"> <"fxRootAddress"> <"daoAddress">
+    ```
 
   - PolymorphicFacesChild  Verification:
-    - `npx hardhat verify --network mumbai <contractAddress> --constructor-args ./deployment/args/child-faces-args.js`
+     ```bash
+    npx hardhat verify --network mumbai <contractAddress> --constructor-args ./deployment/args/child-faces-args.js
+    ```
      
   - ChildTunnel Verification:
-    - `npx hardhat verify --network mumbai <contractAddress> <"fxChildAddress"> <"daoAddress">`
+    ```bash
+    npx hardhat verify --network mumbai <contractAddress> <"fxChildAddress"> <"daoAddress">
+    ```
 
   - TestERC20 Verification:
-    - `npx hardhat verify --network mumbai --contract contracts/polygon/TestERC20.sol:TestERC20 <contractAddress>`
+    ```bash
+    npx hardhat verify --network mumbai --contract contracts/polygon/TestERC20.sol:TestERC20 <contractAddress>
+    ```
 
 ## Gene positions:
 **All traits are morphable**

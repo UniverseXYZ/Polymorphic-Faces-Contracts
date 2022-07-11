@@ -8,7 +8,6 @@ flat
 .vscode
 artifacts
 cache
-deploy.sh
 jsconfig.json
 hardhat.config.js
 .history

@@ -5,7 +5,7 @@ import "./IPolymorphicFacesRoot.sol";
 import "../base/PolymorphsV2/PolymorphRoot.sol";
 import "../base/PolymorphicFacesWithGeneChanger.sol";
 
-contract PolymorphicFacesRoot is 
+contract PolymorphicFacesRoot is
     PolymorphicFacesWithGeneChanger,
     IPolymorphicFacesRoot
 {
@@ -27,8 +27,8 @@ contract PolymorphicFacesRoot is
     uint256 public maxSupply;
 
     PolymorphRoot public polymorphV2Contract;
- 
-    mapping(address => uint256) public numClaimed; 
+
+    mapping(address => uint256) public numClaimed;
 
     event MaxSupplyChanged(uint256 newMaxSupply);
     event PolyV2AddressChanged(address newPolyV2Address);
@@ -47,10 +47,10 @@ contract PolymorphicFacesRoot is
     {
         maxSupply = params._maxSupply;
         arweaveAssetsJSON = params._arweaveAssetsJSON;
-        polymorphV2Contract = PolymorphRoot(payable(params._polymorphV2Address));
-        unchecked {
-            geneGenerator.random();
-        }
+        polymorphV2Contract = PolymorphRoot(
+            payable(params._polymorphV2Address)
+        );
+        geneGenerator.random();
         _setDefaultRoyalty(params._daoAddress, params._royaltyFee);
     }
 
@@ -58,13 +58,14 @@ contract PolymorphicFacesRoot is
         require(_tokenId < maxSupply, "Total supply reached");
         require(amount <= 20, "Can't claim more than 20 faces in one tx");
 
-        for(uint i = 0; i < amount; i++) {
+        for (uint256 i = 0; i < amount; i++) {
             require(
-                polymorphV2Contract.burnCount(msg.sender) > numClaimed[msg.sender],
-                "User already claimed all allowed faces" 
+                polymorphV2Contract.burnCount(msg.sender) >
+                    numClaimed[msg.sender],
+                "User already claimed all allowed faces"
             );
             numClaimed[msg.sender]++;
-        
+
             _tokenId++;
 
             _genes[_tokenId] = geneGenerator.random();
@@ -73,38 +74,37 @@ contract PolymorphicFacesRoot is
 
             emit TokenMinted(_tokenId, _genes[_tokenId]);
             emit TokenMorphed(
-                _tokenId, 
-                0, 
-                _genes[_tokenId], 
-                0, 
+                _tokenId,
+                0,
+                _genes[_tokenId],
+                0,
                 FacesEventType.MINT
             );
         }
     }
 
-    function daoMint() external onlyDAO {
+    function daoMint(uint256 _amount) external onlyDAO {
         require(_tokenId < maxSupply, "Total supply reached");
-        uint256 tokensToMint = 25;
-        for (uint i = 0; i < tokensToMint; i++) {
+        require(_amount <= 25, "DAO can mint at most 25 faces per transaction");
+        for (uint256 i = 0; i < _amount; i++) {
             _tokenId++;
             _genes[_tokenId] = geneGenerator.random();
             _mint(_msgSender(), _tokenId);
 
             emit TokenMinted(_tokenId, _genes[_tokenId]);
             emit TokenMorphed(
-                _tokenId, 
+                _tokenId,
                 0,
                 _genes[_tokenId],
-                0, 
+                0,
                 FacesEventType.MINT
-            ); 
-        }    
+            );
+        }
     }
 
     function mint(address to) public override(ERC721PresetMinterPauserAutoId) {
         revert("Should not use this one");
     }
-    
 
     function setDefaultRoyalty(address receiver, uint96 royaltyFee)
         external
@@ -115,14 +115,16 @@ contract PolymorphicFacesRoot is
         emit DefaultRoyaltyChanged(receiver, royaltyFee);
     }
 
-
     function setMaxSupply(uint256 _maxSupply) public virtual override onlyDAO {
         maxSupply = _maxSupply;
 
         emit MaxSupplyChanged(maxSupply);
     }
 
-    function setPolyV2Address(address payable newPolyV2Address) external onlyDAO {
+    function setPolyV2Address(address payable newPolyV2Address)
+        external
+        onlyDAO
+    {
         polymorphV2Contract = PolymorphRoot(newPolyV2Address);
 
         emit PolyV2AddressChanged(newPolyV2Address);
