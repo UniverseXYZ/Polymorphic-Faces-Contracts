@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+pragma solidity 0.8.14;
 
 import "../base/PolymorphicFacesWithGeneChanger.sol";
 import "./IPolymorphicFacesChild.sol";
@@ -66,7 +66,6 @@ contract PolymorphicFacesChild is IPolymorphicFacesChild, PolymorphicFacesWithGe
         override
         nonReentrant
     {
-        require(genePosition > 0, "Base character not morphable");
         _beforeGenomeChange(tokenId);
         uint256 price = priceForGenomeChange(tokenId);
 
@@ -113,7 +112,6 @@ contract PolymorphicFacesChild is IPolymorphicFacesChild, PolymorphicFacesWithGe
 
         uint256 oldGene = _genes[tokenId];
         _genes[tokenId] = geneGenerator.random();
-        _genes[tokenId] = replaceGene(_genes[tokenId], oldGene % 100, 0); // additional step so that the base character is not changed after scrambling
         _genomeChanges[tokenId] = 0;
         isNotVirgin[tokenId] = true;
         emit TokenMorphed(

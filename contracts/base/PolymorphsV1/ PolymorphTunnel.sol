@@ -1,13 +1,9 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.14;
+import "./IPolymorphsTunnel.sol";
+import "../../modifiers/DAOControlled.sol";
 
-import "./IPolymorphicFacesTunnel.sol";
-import "../modifiers/DAOControlled.sol";
-
-abstract contract PolymorphicFacesTunnel is 
-    DAOControlled, 
-    IPolymorphicFacesTunnel
-{
+abstract contract PolymorphTunnel is DAOControlled, IPolymorphsTunnel {
     constructor(address payable _daoAddress) DAOControlled(_daoAddress) {}
 
     function _decodeMessage(bytes memory data)

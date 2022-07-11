@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "../lib/PolymorphicFacesGeneGenerator.sol";
@@ -14,8 +14,8 @@ abstract contract PolymorphicFacesWithGeneChanger is
 {
     using PolymorphicFacesGeneGenerator for PolymorphicFacesGeneGenerator.Gene;
     using Address for address;
-    //@Todo double check 
-    uint256 constant private TOTAL_ATTRIBUTES = 34;
+
+    uint256 constant private TOTAL_ATTRIBUTES = 38;
 
     mapping(uint256 => uint256) internal _genomeChanges;
     mapping(uint256 => bool) public isNotVirgin;
@@ -65,7 +65,6 @@ abstract contract PolymorphicFacesWithGeneChanger is
         override
         nonReentrant
     {
-        require(genePosition > 0, "Base character not morphable");
         _beforeGenomeChange(tokenId);
         uint256 price = priceForGenomeChange(tokenId);
 
@@ -104,8 +103,7 @@ abstract contract PolymorphicFacesWithGeneChanger is
     ) internal pure virtual returns (uint256 newGene) {
         require(genePosition < TOTAL_ATTRIBUTES, "Bad gene position");
         uint256 mod = 0;
-        //genePosition >= 0 to swap background?
-        if (genePosition > 0) {
+        if (genePosition >= 0) {
             mod = genome % (10**(genePosition * 2)); // Each gene is 2 digits long
         }
 
@@ -144,7 +142,6 @@ abstract contract PolymorphicFacesWithGeneChanger is
 
         uint256 oldGene = _genes[tokenId];
         _genes[tokenId] = geneGenerator.random();
-        _genes[tokenId] = replaceGene(_genes[tokenId], oldGene % 100, 0); // additional step so that the base character is not changed after scrambling
         _genomeChanges[tokenId] = 0;
         isNotVirgin[tokenId] = true;
         emit TokenMorphed(
@@ -201,7 +198,7 @@ abstract contract PolymorphicFacesWithGeneChanger is
     function beforeTransfer(uint256 tokenId, address owner) internal view {
         require(
             ownerOf(tokenId) == owner,
-            "PolymorphWithGeneChanger: cannot change genome of token that is not own"
+            "FacesWithGeneChanger: cannot change genome of token that is not own"
         );
     }
 

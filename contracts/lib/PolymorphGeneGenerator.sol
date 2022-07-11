@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.14;
 
 library PolymorphGeneGenerator {
     struct Gene {
@@ -7,7 +7,8 @@ library PolymorphGeneGenerator {
     }
 
     function random(Gene storage g) internal returns (uint256) {
-        g.lastRandom = uint256(
+        unchecked {
+            g.lastRandom = uint256(
             keccak256(
                 abi.encode(
                     keccak256(
@@ -25,6 +26,7 @@ library PolymorphGeneGenerator {
                 )
             )
         );
+        }
         return g.lastRandom;
     }
 }

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+pragma solidity 0.8.14;
 
 import "./IPolymorphicFacesRoot.sol";
-import "../base/PolymorphV2/PolymorphRoot.sol";
+import "../base/PolymorphsV2/PolymorphRoot.sol";
 import "../base/PolymorphicFacesWithGeneChanger.sol";
 
 contract PolymorphicFacesRoot is 
@@ -17,25 +17,20 @@ contract PolymorphicFacesRoot is
         string baseURI;
         address payable _daoAddress;
         uint96 _royaltyFee;
-        uint256 premintedTokensCount;
         uint256 _baseGenomeChangePrice;
         uint256 _maxSupply;
         uint256 _randomizeGenomePrice;
-        uint256 _bulkBuyLimit;
         string _arweaveAssetsJSON;
         address _polymorphV2Address;
     }
 
     uint256 public maxSupply;
-    uint256 public bulkBuyLimit;
 
-    PolymorphRoot public polymorphV2Contract;   
-    uint256 public totalBurnedV1;
-
+    PolymorphRoot public polymorphV2Contract;
+ 
     mapping(address => uint256) public numClaimed; 
 
     event MaxSupplyChanged(uint256 newMaxSupply);
-    event BulkBuyLimitChanged(uint256 newBulkBuyLimit);
     event PolyV2AddressChanged(address newPolyV2Address);
     event DefaultRoyaltyChanged(address newReceiver, uint96 newDefaultRoyalty);
 
@@ -51,25 +46,23 @@ contract PolymorphicFacesRoot is
         )
     {
         maxSupply = params._maxSupply;
-        bulkBuyLimit = params._bulkBuyLimit;
         arweaveAssetsJSON = params._arweaveAssetsJSON;
         polymorphV2Contract = PolymorphRoot(payable(params._polymorphV2Address));
-        geneGenerator.random();
+        unchecked {
+            geneGenerator.random();
+        }
         _setDefaultRoyalty(params._daoAddress, params._royaltyFee);
     }
 
+    function claim(uint256 amount) public nonReentrant {
+        require(_tokenId < maxSupply, "Total supply reached");
+        require(amount <= 20, "Can't claim more than 20 faces in one tx");
 
-    function mint(uint256 _amount) external virtual nonReentrant {
-        uint256 currentSupply = totalSupply();
-        require((_amount + currentSupply) <= maxSupply, "Total supply reached");
-        require(_amount <= bulkBuyLimit, "Can't mint more than bulk buy limit");
-
-        for(uint i=0; i<_amount;i++){
+        for(uint i = 0; i < amount; i++) {
             require(
                 polymorphV2Contract.burnCount(msg.sender) > numClaimed[msg.sender],
-                "Claimed current PolymorphV2 burn amount" 
+                "User already claimed all allowed faces" 
             );
-
             numClaimed[msg.sender]++;
         
             _tokenId++;
@@ -89,11 +82,10 @@ contract PolymorphicFacesRoot is
         }
     }
 
-
-    function daoMint() public onlyDAO {
+    function daoMint() external onlyDAO {
         require(_tokenId < maxSupply, "Total supply reached");
-        uint256 remaningSupply = (maxSupply - totalSupply()) + 1;
-        for (uint i = 1; i < remaningSupply; i++) {
+        uint256 tokensToMint = 25;
+        for (uint i = 0; i < tokensToMint; i++) {
             _tokenId++;
             _genes[_tokenId] = geneGenerator.random();
             _mint(_msgSender(), _tokenId);
@@ -107,6 +99,10 @@ contract PolymorphicFacesRoot is
                 FacesEventType.MINT
             ); 
         }    
+    }
+
+    function mint(address to) public override(ERC721PresetMinterPauserAutoId) {
+        revert("Should not use this one");
     }
     
 
@@ -126,24 +122,9 @@ contract PolymorphicFacesRoot is
         emit MaxSupplyChanged(maxSupply);
     }
 
-    function setPolyV2Address(address newPolyV2Address) public onlyDAO {
-        polymorphV2Contract = PolymorphRoot(payable(newPolyV2Address));
+    function setPolyV2Address(address payable newPolyV2Address) external onlyDAO {
+        polymorphV2Contract = PolymorphRoot(newPolyV2Address);
 
         emit PolyV2AddressChanged(newPolyV2Address);
     }
-
-    function setBulkBuyLimit(uint256 _bulkBuyLimit)
-        public
-        virtual
-        override
-        onlyDAO
-    {
-        bulkBuyLimit = _bulkBuyLimit;
-
-        emit BulkBuyLimitChanged(_bulkBuyLimit);
-    }
-
-//    receive() external payable {
-//         mint();
-//     }
 }

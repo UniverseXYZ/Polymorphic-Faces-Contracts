@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+pragma solidity 0.8.14;
 
 import "../tunnel/FxBaseRootTunnel.sol";
 import "../base/PolymorphicFacesTunnel.sol";
@@ -17,18 +17,10 @@ contract PolymorphicFacesRootTunnel is FxBaseRootTunnel, PolymorphicFacesTunnel 
 
     PolymorphicFacesRoot public facesContract;
 
-    modifier onlyOwner(uint256 tokenId) {
-        require(
-            facesContract.ownerOf(tokenId) == msg.sender,
-            "Only owner can move faces"
-        );
-        _;
-    }
-
     function _processMessageFromChild(bytes memory data) internal override {
         require(
             address(facesContract) != address(0),
-            "faces contract hasn't been set yet"
+            "Faces contract hasn't been set yet"
         );
         (
             uint256 tokenId,
@@ -48,22 +40,25 @@ contract PolymorphicFacesRootTunnel is FxBaseRootTunnel, PolymorphicFacesTunnel 
         );
     }
 
-    function moveThroughWormhole(uint256 tokenId)
+    function moveThroughWormhole(uint256[] calldata _tokenIds)
         public
         override
-        onlyOwner(tokenId)
     {
-        facesContract.transferFrom(msg.sender, address(this), tokenId);
+        require(_tokenIds.length <= 20, "Trying to bridge more than 20 faces");
+        for(uint256 i = 0; i < _tokenIds.length; i++) {
+            require(facesContract.ownerOf(_tokenIds[i]) == msg.sender, "Owner of the face to bridge should be msg.sender");
+            facesContract.transferFrom(msg.sender, address(this), _tokenIds[i]);
 
-        _sendMessageToChild(
-            abi.encode(
-                tokenId,
-                msg.sender,
-                facesContract.geneOf(tokenId),
-                facesContract.isNotVirgin(tokenId),
-                facesContract.genomeChanges(tokenId)
-            )
-        );
+            _sendMessageToChild(
+                abi.encode(
+                    _tokenIds[i],
+                    msg.sender,
+                    facesContract.geneOf(_tokenIds[i]),
+                    facesContract.isNotVirgin(_tokenIds[i]),
+                    facesContract.genomeChanges(_tokenIds[i])
+                )
+            );
+        }
     }
 
     function setFacesContract(address payable contractAddress)

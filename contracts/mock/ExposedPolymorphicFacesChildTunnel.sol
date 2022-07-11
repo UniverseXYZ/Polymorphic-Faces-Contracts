@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.14;
 import "../polygon/PolymorphicFacesChildTunnel.sol";
 
 // Exposes internal functions so they can be called in tests
-contract ExposedPolymorphChildTunnel is PolymorphicFacesChildTunnel {
+contract ExposedPolymorphicFacesChildTunnel is PolymorphicFacesChildTunnel {
     constructor(address _fxChild, address payable _daoAddress)
         PolymorphicFacesChildTunnel(_fxChild, _daoAddress)
     {}

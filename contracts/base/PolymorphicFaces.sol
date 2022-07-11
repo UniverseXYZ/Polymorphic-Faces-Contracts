@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+pragma solidity 0.8.14;
 
 import "./IPolymorphicFaces.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -8,10 +8,9 @@ import "../base/ERC721PresetMinterPauserAutoId.sol";
 import "../lib/PolymorphicFacesGeneGenerator.sol";
 import "../modifiers/DAOControlled.sol";
 
-abstract contract PolymorphicFaces is
+contract PolymorphicFaces is
     IPolymorphicFaces,
     ERC721PresetMinterPauserAutoId,
-    ERC2981,
     ReentrancyGuard,
     DAOControlled
 {
@@ -31,8 +30,6 @@ abstract contract PolymorphicFaces is
     );
     event TokenMinted(uint256 indexed tokenId, uint256 newGene);
 
-
-    event BaseURIChanged(string arweaveAssetsJSON);
     event ArweaveAssetsJSONChanged(string arweaveAssetsJSON);
     
     enum FacesEventType {
@@ -64,7 +61,7 @@ abstract contract PolymorphicFaces is
         return _genes[tokenId];
     }
 
-    function lastTokenId() public view override returns (uint256 tokenId) {
+    function lastTokenId() public view override(ERC721PresetMinterPauserAutoId) returns (uint256 tokenId) {
         return _tokenId;
     }
 
@@ -109,7 +106,7 @@ abstract contract PolymorphicFaces is
         public
         view
         virtual
-        override(ERC721PresetMinterPauserAutoId, IERC165, ERC2981)
+        override(ERC721PresetMinterPauserAutoId, IERC165)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

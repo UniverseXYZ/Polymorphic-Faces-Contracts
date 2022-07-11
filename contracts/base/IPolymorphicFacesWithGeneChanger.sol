@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+pragma solidity 0.8.14;
 
 interface IPolymorphicFacesWithGeneChanger {
     function morphGene(uint256 tokenId, uint256 genePosition) external payable;

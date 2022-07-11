@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/Create2.sol";
@@ -7,7 +7,7 @@ import "../mainnet/PolymorphicFacesRoot.sol";
 
 contract FlipFactory is ERC721Holder {
     bytes internal _bytecode;
-    PolymorphicFacesRoot faces =
+    PolymorphicFacesRoot polyFaces =
         PolymorphicFacesRoot(payable(0x273c507D8E21cDE039491B14647Fe9278D88e91D)); // Ropsten Contract;
 
     constructor() {}
@@ -21,13 +21,13 @@ contract FlipFactory is ERC721Holder {
             bytes32(0),
             keccak256(bytecode)
         );
-        faces.safeTransferFrom(msg.sender, expectedAddress, morphId);
+        polyFaces.safeTransferFrom(msg.sender, expectedAddress, morphId);
         _bytecode = bytecode;
         search(limit);
         delete _bytecode;
         require(
-            faces.ownerOf(morphId) == msg.sender,
-            "Did not receive faces"
+            polyFaces.ownerOf(morphId) == msg.sender,
+            "Did not receive face"
         );
     }
 

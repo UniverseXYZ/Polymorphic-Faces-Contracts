@@ -1,12 +1,13 @@
-pragma solidity 0.8.13;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "../../lib/PolymorphGeneGenerator.sol";
 import "../../modifiers/TunnelEnabled.sol";
-import "../PolymorphV1/Polymorph.sol";
+import "./Polymorph.sol";
 import "./IPolymorphWithGeneChanger.sol";
 
-abstract contract PolymorphWithGeneChanger is
+contract PolymorphWithGeneChanger is
     IPolymorphWithGeneChanger,
     Polymorph,
     TunnelEnabled
@@ -29,10 +30,13 @@ abstract contract PolymorphWithGeneChanger is
         string memory symbol,
         string memory baseURI,
         address payable _daoAddress,
+        uint256 _polymorphPrice,
+        uint256 _maxSupply,
+        uint256 _bulkBuyLimit,
         uint256 _baseGenomeChangePrice,
         uint256 _randomizeGenomePrice,
         string memory _arweaveAssetsJSON
-    ) Polymorph(name, symbol, baseURI, _daoAddress, _arweaveAssetsJSON) {
+    ) Polymorph(name, symbol, baseURI, _daoAddress,_polymorphPrice,_maxSupply,_bulkBuyLimit, _arweaveAssetsJSON) {
         baseGenomeChangePrice = _baseGenomeChangePrice;
         randomizeGenomePrice = _randomizeGenomePrice;
     }

@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.13;
+pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "./ERC721Consumable.sol";
 
 /**
@@ -30,7 +31,8 @@ contract ERC721PresetMinterPauserAutoId is
     ERC721Consumable,
     ERC721Enumerable,
     ERC721Burnable,
-    ERC721Pausable
+    ERC721Pausable,
+    ERC2981
 {
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -39,6 +41,8 @@ contract ERC721PresetMinterPauserAutoId is
     uint256 internal _tokenId;
 
     string private _baseTokenURI;
+
+    event BaseURIChanged(string baseURI);
 
     /**
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
@@ -71,6 +75,10 @@ contract ERC721PresetMinterPauserAutoId is
 
     function baseURI() external view virtual returns (string memory) {
         return _baseURI();
+    }
+
+    function lastTokenId() public view virtual returns (uint256 tokenId) {
+        return _tokenId;
     }
 
     /**
@@ -153,7 +161,8 @@ contract ERC721PresetMinterPauserAutoId is
             AccessControlEnumerable,
             ERC721,
             ERC721Consumable,
-            ERC721Enumerable
+            ERC721Enumerable,
+            ERC2981
         )
         returns (bool)
     {

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.14;
 
 import "./IPolymorphRoot.sol";
-import "../PolymorphV1/Polymorph.sol";
-import "./PolymorphWithGeneChanger.sol";
+import "../PolymorphsV1/Polymorph.sol";
+import "../PolymorphsV1/PolymorphWithGeneChanger.sol";
 
 contract PolymorphRoot is PolymorphWithGeneChanger, IPolymorphRoot {
     using PolymorphGeneGenerator for PolymorphGeneGenerator.Gene;
@@ -23,18 +23,18 @@ contract PolymorphRoot is PolymorphWithGeneChanger, IPolymorphRoot {
         address _polymorphV1Address;
     }
 
-    uint256 public polymorphPrice;
-    uint256 public maxSupply;
-    uint256 public bulkBuyLimit;
+    //uint256 public polymorphPrice;
+    //uint256 public maxSupply;
+    //uint256 public bulkBuyLimit;
 
     Polymorph public polymorphV1Contract;
     mapping(address => uint256) public burnCount;
 
     uint16 constant private STARTING_TOKEN_ID = 10000;
 
-    event PolymorphPriceChanged(uint256 newPolymorphPrice);
-    event MaxSupplyChanged(uint256 newMaxSupply);
-    event BulkBuyLimitChanged(uint256 newBulkBuyLimit);
+    //event PolymorphPriceChanged(uint256 newPolymorphPrice);
+    //event MaxSupplyChanged(uint256 newMaxSupply);
+    //event BulkBuyLimitChanged(uint256 newBulkBuyLimit);
     event DefaultRoyaltyChanged(address newReceiver, uint96 newDefaultRoyalty);
 
     constructor(Params memory params)
@@ -43,21 +43,26 @@ contract PolymorphRoot is PolymorphWithGeneChanger, IPolymorphRoot {
             params.symbol,
             params.baseURI,
             params._daoAddress,
+            params._polymorphPrice,
+            params._maxSupply,
+            params._bulkBuyLimit,
             params._baseGenomeChangePrice,
             params._randomizeGenomePrice,
             params._arweaveAssetsJSON
         )
     {
-        polymorphPrice = params._polymorphPrice;
-        maxSupply = params._maxSupply;
+        // polymorphPrice = params._polymorphPrice;
+        // maxSupply = params._maxSupply;
 
-        bulkBuyLimit = params._bulkBuyLimit;
+        // bulkBuyLimit = params._bulkBuyLimit;
 
         polymorphV1Contract = Polymorph(params._polymorphV1Address);
+
         geneGenerator.random();
 
         _tokenId = _tokenId + STARTING_TOKEN_ID;
 
+        _setDefaultRoyalty(params._daoAddress, params._royaltyFee);
 
     }
 
@@ -107,7 +112,7 @@ contract PolymorphRoot is PolymorphWithGeneChanger, IPolymorphRoot {
         }
     }
 
-    function bulkBuy(uint256 amount) public payable override nonReentrant {
+    function bulkBuy(uint256 amount) public override(Polymorph,IPolymorphRoot) payable nonReentrant {
         require(
             amount <= bulkBuyLimit,
             "Cannot bulk buy more than the preset limit"
@@ -143,13 +148,13 @@ contract PolymorphRoot is PolymorphWithGeneChanger, IPolymorphRoot {
         );
     }
 
-    function mint(address to)
-        public
-        pure
-        override(ERC721PresetMinterPauserAutoId)
-    {
-        revert("Should not use this one");
-    }
+    // function mint(address to)
+    //     public
+    //     pure
+    //     override
+    // {
+    //     revert("Should not use this one");
+    // }
 
     function setPolymorphPrice(uint256 newPolymorphPrice)
         public
@@ -168,18 +173,25 @@ contract PolymorphRoot is PolymorphWithGeneChanger, IPolymorphRoot {
         emit MaxSupplyChanged(maxSupply);
     }
 
-    function setBulkBuyLimit(uint256 _bulkBuyLimit)
-        public
-        virtual
-        override
+    // function setBulkBuyLimit(uint256 _bulkBuyLimit)
+    //     public
+    //     virtual
+    //     override
+    //     onlyDAO
+    // {
+    //     bulkBuyLimit = _bulkBuyLimit;
+
+    //     emit BulkBuyLimitChanged(_bulkBuyLimit);
+    // }
+
+    function setDefaultRoyalty(address receiver, uint96 royaltyFee)
+        external
         onlyDAO
     {
-        bulkBuyLimit = _bulkBuyLimit;
+        _setDefaultRoyalty(receiver, royaltyFee);
 
-        emit BulkBuyLimitChanged(_bulkBuyLimit);
+        emit DefaultRoyaltyChanged(receiver, royaltyFee);
     }
-
-
 
     receive() external payable {
         mint();

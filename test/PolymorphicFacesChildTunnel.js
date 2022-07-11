@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 
-describe('PolymorphChildTunnel', () => {
+describe('PolymorphicFacesChildTunnel', () => {
   let tunnelInstance, exposedTunnelInstance;
   const goerliFxChild = "0xCf73231F28B7331BBe3124B907840A94851f9f11";
   
@@ -8,10 +8,10 @@ describe('PolymorphChildTunnel', () => {
   const daoAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 
   before(async () => {
-    const PolymorphRootTunnel = await ethers.getContractFactory("PolymorphChildTunnel");
-    const ExposedPolymorphRootTunnelContract = await ethers.getContractFactory("ExposedPolymorphChildTunnel");
-    tunnelInstance = await PolymorphRootTunnel.deploy(goerliFxChild, daoAddress);
-    exposedTunnelInstance = await ExposedPolymorphRootTunnelContract.deploy(goerliFxChild, daoAddress);
+    const PolymorphicFacesChildTunnel = await ethers.getContractFactory("PolymorphicFacesChildTunnel");
+    const ExposedPolymorphicFacesChildTunnelContract = await ethers.getContractFactory("ExposedPolymorphicFacesChildTunnel");
+    tunnelInstance = await PolymorphicFacesChildTunnel.deploy(goerliFxChild, daoAddress);
+    exposedTunnelInstance = await ExposedPolymorphicFacesChildTunnelContract.deploy(goerliFxChild, daoAddress);
     console.log(`contract deployed to: ${tunnelInstance.address}`);
     console.log(`exposed contract deployed to: ${exposedTunnelInstance.address}`);
   });
@@ -31,26 +31,26 @@ describe('PolymorphChildTunnel', () => {
     );
     const result = await exposedTunnelInstance.decodeMessage(keccak);
     expect(result.tokenId.toNumber()).eq(tokenId);
-    expect(result.polymorphAddress).eq(ownerAddress);
+    expect(result.facesAddress).eq(ownerAddress);
     expect(result.gene).eq(gene);
     expect(result.isVirgin).eq(true);
     expect(result.genomeChanges.toNumber()).eq(genomeChanges);
   });
 
-  it('Dao address should be able to set polymorph contract', async () => {
-    await expect(tunnelInstance.setPolymorphContract("0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA")).to.not.be.reverted;
+  it('Dao address should be able to set faces contract', async () => {
+    await expect(tunnelInstance.setFacesContract("0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA")).to.not.be.reverted;
   });
 
-  it('Polymorph contract should change', async () => {
-    const newPolymorphAddress = "0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA";
+  it('Faces contract should change', async () => {
+    const newFacesAddress = "0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA";
 
-    await tunnelInstance.setPolymorphContract(newPolymorphAddress);
+    await tunnelInstance.setFacesContract(newFacesAddress);
 
-     expect(await tunnelInstance.polymorphContract()).to.eq(newPolymorphAddress)
+     expect(await tunnelInstance.facesContract()).to.eq(newFacesAddress)
   })
 
-  it('Address that is not dao should not be able to set polymorph contract', async () => {
+  it('Address that is not dao should not be able to set faces contract', async () => {
     const [user, alice] = await ethers.getSigners();
-    await expect(exposedTunnelInstance.connect(alice).setPolymorphContract("0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA")).to.be.revertedWith("Not called from the dao");
+    await expect(exposedTunnelInstance.connect(alice).setFacesContract("0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA")).to.be.revertedWith("Not called from the dao");
   });
 })
