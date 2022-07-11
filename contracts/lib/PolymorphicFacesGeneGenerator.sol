@@ -7,7 +7,6 @@ library PolymorphicFacesGeneGenerator {
     }
 
     function random(Gene storage g) internal returns (uint256) {
-        unchecked {
             g.lastRandom = uint256(
             keccak256(
                 abi.encode(
@@ -26,7 +25,6 @@ library PolymorphicFacesGeneGenerator {
                 )
             )
         );
-        }
         return g.lastRandom;
     }
 }
