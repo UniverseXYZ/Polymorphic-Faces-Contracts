@@ -17,7 +17,7 @@ describe("PolymorphicFacesRoot", () => {
   let baseGenomeChangePriceV2 = ethers.utils.parseEther("0.01");
   let randomizeGenomePriceV2 = ethers.utils.parseEther("0.01");
   let polymorphPrice = ethers.utils.parseEther("0.0777");
-  let randomizeGenomePrice = ethers.utils.parseEther("0.05");
+  let randomizeGenomePrice = ethers.utils.parseEther("0.005");
   let arweaveAssetsJSON = "JSON";
   let bulkBuyLimit = 20;
   let startTokenId = 0;
@@ -62,11 +62,9 @@ describe("PolymorphicFacesRoot", () => {
       { gasLimit: 15000000 }
     );
 
-    await v1Instance
-      .connect(user)
-      .bulkBuy(v1PolymorphsInitialBuy, {
-        value: polymorphPrice.mul(v1PolymorphsInitialBuy),
-      });
+    await v1Instance.connect(user).bulkBuy(v1PolymorphsInitialBuy, {
+      value: polymorphPrice.mul(v1PolymorphsInitialBuy),
+    });
 
     constructorArgsPolymorphs = {
       name: "PolymorphRoot",
@@ -871,7 +869,7 @@ describe("PolymorphicFacesRoot", () => {
     );
   });
 
-  it.only(`daoMint should mint up to totalSupply`, async () => {
+  it(`daoMint should mint up to totalSupply`, async () => {
     const PolymorphicFacesRoot = await ethers.getContractFactory(
       "PolymorphicFacesRoot"
     );
@@ -892,22 +890,79 @@ describe("PolymorphicFacesRoot", () => {
     const totalSupplyAfter = await facesInst.maxSupply();
     expect(totalSupplyAfter).eq(newMaxSupply, "The max supply did not change");
 
-    await expect(facesInst.daoMint(15)).to.be.revertedWith("Not called from the dao");
-    await expect(facesInst.connect(DAO).daoMint(30)).to.be.revertedWith("DAO can mint at most 25 faces per transaction");
+    await expect(facesInst.daoMint(15)).to.be.revertedWith(
+      "Not called from the dao"
+    );
+    await expect(facesInst.connect(DAO).daoMint(30)).to.be.revertedWith(
+      "DAO can mint at most 25 faces per transaction"
+    );
     await expect(facesInst.connect(DAO).daoMint(15)).to.not.be.reverted;
 
-    // buying one more v1 and v2 polys
+    await expect(facesInst.claim(1, { gasLimit: 15000000 })).revertedWith(
+      "Total supply reached"
+    );
+  });
 
-    await v1Instance.bulkBuy(1, { value: polymorphPrice.mul(1) });
-
-    const lastV1Poly = await v1Instance.lastTokenId();
-
-    expect(lastV1Poly).to.eq(16);
-
-    await v2Instance.burnAndMintNewPolymorph([lastV1Poly], {
+  it(`totalSupply shouldn't be exceeded after daoMint and claim sequential transactions`, async () => {
+    const PolymorphicFacesRoot = await ethers.getContractFactory(
+      "PolymorphicFacesRoot"
+    );
+    const facesInst = await PolymorphicFacesRoot.deploy(constructorArgsFaces, {
       gasLimit: 15000000,
     });
 
+    const newMaxSupply = 25;
+
+    const totalSupplyBefore = await facesInst.maxSupply();
+    expect(totalSupplyBefore).eq(
+      totalSupply,
+      `The max supply was not ${totalSupply} in the beginning`
+    );
+
+    await facesInst.connect(DAO).setMaxSupply(newMaxSupply);
+
+    const totalSupplyAfter = await facesInst.maxSupply();
+    expect(totalSupplyAfter).eq(newMaxSupply, "The max supply did not change");
+
+    await expect(facesInst.claim(5, { gasLimit: 15000000 })).to.not.be
+      .reverted;
+
+    await expect(facesInst.daoMint(10)).to.be.revertedWith(
+      "Not called from the dao"
+    );
+    await expect(facesInst.connect(DAO).daoMint(30)).to.be.revertedWith(
+      "DAO can mint at most 25 faces per transaction"
+    );
+    await expect(facesInst.connect(DAO).daoMint(10)).to.not.be.reverted;
+
+    // Buy 10 more V1s
+    await v1Instance.bulkBuy(10, { value: polymorphPrice.mul(10) });
+
+    const lastV1 = await v1Instance.lastTokenId();
+
+    // Burn the 10 V1s into V2s
+    await v2Instance.burnAndMintNewPolymorph(
+      [
+        lastV1,
+        lastV1 - 1,
+        lastV1 - 2,
+        lastV1 - 3,
+        lastV1 - 4,
+        lastV1 - 5,
+        lastV1 - 6,
+        lastV1 - 7,
+        lastV1 - 8,
+        lastV1 - 9,
+      ],
+      { gasLimit: 15000000 }
+    );
+
+    // Claim 10 faces
+    await expect(facesInst.claim(10, { gasLimit: 15000000 })).to.not.be
+      .reverted;
+
+    const lastFaceId = await facesInst.lastTokenId();
+    expect(lastFaceId).eq(newMaxSupply);
     await expect(facesInst.claim(1, { gasLimit: 15000000 })).revertedWith(
       "Total supply reached"
     );

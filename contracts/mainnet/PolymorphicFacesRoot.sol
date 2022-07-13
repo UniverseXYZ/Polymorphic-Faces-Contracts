@@ -55,8 +55,8 @@ contract PolymorphicFacesRoot is
     }
 
     function claim(uint256 amount) public nonReentrant {
-        require(_tokenId < maxSupply, "Total supply reached");
         require(amount <= 20, "Can't claim more than 20 faces in one tx");
+        require(_tokenId + amount <= maxSupply, "Total supply reached");
 
         for (uint256 i = 0; i < amount; i++) {
             require(
@@ -84,8 +84,8 @@ contract PolymorphicFacesRoot is
     }
 
     function daoMint(uint256 _amount) external onlyDAO {
-        require(_tokenId < maxSupply, "Total supply reached");
         require(_amount <= 25, "DAO can mint at most 25 faces per transaction");
+        require(_tokenId + _amount <= maxSupply, "Total supply reached");
         for (uint256 i = 0; i < _amount; i++) {
             _tokenId++;
             _genes[_tokenId] = geneGenerator.random();
