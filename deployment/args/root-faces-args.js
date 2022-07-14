@@ -2,15 +2,15 @@ const hre = require("hardhat");
 const ethers = hre.ethers;
 
 const tokenName = "Polymorphic Faces";
-const symbol = "Faces";
-const metadataURI ="https://us-central1-polymorphmetadata.cloudfunctions.net/faces-metadata-rinkeby?id=";
-const DAOAddress = "0x7e94e8D8c85960DBDC67E080C3D48D4e0BD423a6";
-const royaltyFee = 10;
-const geneChangePrice = ethers.utils.parseEther('0.001');
+const symbol = "FACES";
+const metadataURI ="https://us-central1-polymorphmetadata.cloudfunctions.net/faces-metadata?id=";
+const DAOAddress = "0xa8047c2a86d5a188b0e15c3c10e2bc144cb272c2"; 
+const royaltyFee = 500;
+const geneChangePrice = ethers.utils.parseEther("0.001");
 const polymorphsLimit = 10000;
 const randomizePrice = ethers.utils.parseEther("0.005");
-const arweaveContainer = "https://arweave.net/5KDDRA5EE9p-Bw29ryB9Uz6SvMRNMCyXKkOzW_ZT9gA";
-const polymorphV2Address = "0xD62b95EB151dC1C5C34B4Ac877239E00EB50793a";
+const arweaveContainer =  "";
+const polymorphV2Address = "0xb5433e67C067Cad4cb36529f3f2D61ec0fb59F89";
 
 module.exports = [
   {

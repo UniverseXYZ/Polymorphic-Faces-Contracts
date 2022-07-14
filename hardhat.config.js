@@ -49,6 +49,10 @@
       url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: [process.env.PRIVATE_KEY]
     },
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: [process.env.PRIVATE_KEY]
+    },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: [process.env.PRIVATE_KEY]
@@ -62,7 +66,8 @@
     apiKey: {
       rinkeby: process.env.ETHERSCAN_API_KEY,
       goerli: process.env.ETHERSCAN_API_KEY,
-      polygonMumbai: process.env.POLYGONSCAN_API_KEY
+      polygonMumbai: process.env.POLYGONSCAN_API_KEY,
+      mainnet: process.env.ETHERSCAN_API_KEY
     }
    }
  }

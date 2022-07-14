@@ -4,6 +4,7 @@ pragma solidity 0.8.14;
 import "./IPolymorphicFaces.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../base/ERC721PresetMinterPauserAutoId.sol";
 import "../lib/PolymorphicFacesGeneGenerator.sol";
 import "../modifiers/DAOControlled.sol";
@@ -12,7 +13,8 @@ contract PolymorphicFaces is
     IPolymorphicFaces,
     ERC721PresetMinterPauserAutoId,
     ReentrancyGuard,
-    DAOControlled
+    DAOControlled,
+    Ownable
 {
     using PolymorphicFacesGeneGenerator for PolymorphicFacesGeneGenerator.Gene;
 
